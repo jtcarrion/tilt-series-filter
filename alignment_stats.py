@@ -2,6 +2,7 @@ import argparse
 import numpy as np
 from pathlib import Path
 
+
 def alignment_stats(xf_dir):
     """
     Parse one or more XF files containing transformation data for tilt-series images.
@@ -49,6 +50,33 @@ def alignment_stats(xf_dir):
     return xf_data, tilt_data
 
 
+def print_tilt_histogram(tilt_data, bar_width=50):
+    """
+    Print a horizontal histogram of the average Euclidean shift per tilt.
+    :param tilt_data: Dict of tilt index -> list of [dx, dy]
+    :param bar_width: Maximum width of the histogram bar
+    """
+    import math
+    # Calculate avg shift (Euclidean norm) per tilt
+    avg_shifts = {}
+    for i, data in tilt_data.items():
+        arr = np.array(data)
+        dx_mean = np.mean(arr[:, 0])
+        dy_mean = np.mean(arr[:, 1])
+        avg_shift = math.sqrt(dx_mean ** 2 + dy_mean ** 2)
+        avg_shifts[i] = avg_shift
+    if not avg_shifts:
+        print("No tilt data to plot histogram.")
+        return
+    max_shift = max(avg_shifts.values())
+    print("\nAvg Shifts (Euclidean norm) per tilt:")
+    for i in sorted(avg_shifts):
+        shift = avg_shifts[i]
+        n_x = int((shift / max_shift) * bar_width) if max_shift > 0 else 0
+        bar = 'x' * n_x
+        print(f"Tilt {i:2d}: {bar} ({shift:.3f})")
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Compute and print alignment statistics for all XF files in a directory.')
     parser.add_argument('xf_dir', type=str, help='Path to directory containing XF files')
@@ -59,4 +87,8 @@ if __name__ == '__main__':
         raise ValueError(f"Provided path {xf_dir} is not a directory.")
 
     print(f"Computing alignment statistics for all .xf files in directory: {xf_dir}")
-    alignment_stats(xf_dir) 
+    alignment_stats(xf_dir)
+   
+    # Print histogram after stats
+    _, tilt_data = alignment_stats(xf_dir)
+    print_tilt_histogram(tilt_data) 
