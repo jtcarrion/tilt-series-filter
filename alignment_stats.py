@@ -13,9 +13,10 @@ def alignment_stats(xf_dir):
     """
     xf_data = []  # List of [dx, dy] for all tilts in all files
     tilt_data = {}  # Dict: tilt index -> list of [dx, dy] for that tilt
-
+    num_files = 0
     # Read the file(s)
     for file_path in xf_dir.glob('*.xf'):
+        num_files += 1
         with open(file_path, 'r') as f:
             lines = f.readlines()
 
@@ -38,12 +39,13 @@ def alignment_stats(xf_dir):
         dy_mean = np.mean(arr[:, 1])
         dx_std = np.std(arr[:, 0])
         dy_std = np.std(arr[:, 1])
-        print(f"Tilt {i}:")
-        print(f"  Mean: ({dx_mean}, {dy_mean})")
-        print(f"  Std: ({dx_std}, {dy_std})")
+        #print(f"Tilt {i}:")
+        #print(f"  Mean: ({dx_mean}, {dy_mean})")
+        #print(f"  Std: ({dx_std}, {dy_std})")
 
     # Print avg and std of all tilts
     xf_arr = np.array(xf_data)
+    print(f"Number of XF files: {num_files}")
     print(f"Avg dx: {np.mean(xf_arr[:, 0])}, Avg dy: {np.mean(xf_arr[:, 1])}")
     print(f"Std dx: {np.std(xf_arr[:, 0])}, Std dy: {np.std(xf_arr[:, 1])}")
 
@@ -87,8 +89,7 @@ if __name__ == '__main__':
         raise ValueError(f"Provided path {xf_dir} is not a directory.")
 
     print(f"Computing alignment statistics for all .xf files in directory: {xf_dir}")
-    alignment_stats(xf_dir)
    
     # Print histogram after stats
-    _, tilt_data = alignment_stats(xf_dir)
+    xf_data, tilt_data = alignment_stats(xf_dir)
     print_tilt_histogram(tilt_data) 
